@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     repositories {
         google()
         jcenter()
@@ -20,7 +20,10 @@ allprojects {
         google()
         jcenter()
         flatDir {
-            dirs 'libs','../library/libs'
+            dirs 'libs', '../library/libs'
+        }
+        maven {
+            url 'https://dl.bintray.com/xinpengfei520/iPayment'
         }
     }
     tasks.withType(Javadoc) {

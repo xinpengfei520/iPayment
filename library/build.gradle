@@ -34,7 +34,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    api(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
+    implementation(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:5.1.6'
 }
 
@@ -67,7 +67,7 @@ artifacts {
 publish {
     repoName = 'iPayment' // bintray 仓库名
     userOrg = 'xinpengfei520' // bintray 注册的用户名
-    groupId = 'com.github.xpf' // implementation 引用时的第 1 部分 groupId
+    groupId = 'com.xsir' // implementation 引用时的第 1 部分 groupId
     artifactId = 'iPayment' // implementation 引用时的第 2 部分项目名
     publishVersion = "0.1" // implementation 引用时的第 3 部分版本号
     desc = 'Android app common pay interfaces.'
