@@ -40,11 +40,9 @@ public class AliPayV2 extends AbstractPayment {
 
     /**
      * pkcs8 格式的商户私钥。
-     * <p>
      * 如下私钥，RSA2_PRIVATE 或者 RSA_PRIVATE 只需要填入一个，如果两个都设置了，本 Demo 将优先
      * 使用 RSA2_PRIVATE。RSA2_PRIVATE 可以保证商户交易在更加安全的环境下进行，建议商户使用
      * RSA2_PRIVATE。
-     * <p>
      * 建议使用支付宝提供的公私钥生成工具生成和获取 RSA2_PRIVATE。
      * 工具地址：https://doc.open.alipay.com/docs/doc.htm?treeId=291&articleId=106097&docType=1
      */
@@ -59,10 +57,13 @@ public class AliPayV2 extends AbstractPayment {
 
     private Activity mActivity;
 
-    //未签名的订单信息
+    // 未签名的订单信息
     private String rawAliPayOrderInfo;
-    //服务器签名成功的订单信息
+    // 服务器签名成功的订单信息
     private String signedAliPayOrderInfo;
+
+    // 支付宝支付监听
+    private OnAliPayListener mOnAliPayListener;
 
     private Handler mHandler;
 
@@ -115,7 +116,6 @@ public class AliPayV2 extends AbstractPayment {
                         break;
                 }
             }
-
         };
     }
 
@@ -225,54 +225,40 @@ public class AliPayV2 extends AbstractPayment {
      * @param callbackUrl 服务器异步通知页面路径
      * @return
      */
-    public static String getOrderInfo(String partner, String seller, String outTradeNo, String subject, String body, String price, String callbackUrl) {
-
+    private static String getOrderInfo(String partner, String seller, String outTradeNo, String subject, String body, String price, String callbackUrl) {
         // 签约合作者身份ID
         String orderInfo = "partner=" + "\"" + partner + "\"";
-
         // 签约卖家支付宝账号
         orderInfo += "&seller_id=" + "\"" + seller + "\"";
-
         // 商户网站唯一订单号
         orderInfo += "&out_trade_no=" + "\"" + outTradeNo + "\"";
-
         // 商品名称
         orderInfo += "&subject=" + "\"" + subject + "\"";
-
         // 商品详情
         orderInfo += "&body=" + "\"" + body + "\"";
-
         // 商品金额
         orderInfo += "&total_fee=" + "\"" + price + "\"";
-
         // 服务器异步通知页面路径
 //		orderInfo += "&notify_url=" + "\"" + "http://notify.msp.hk/notify.htm"
 //				+ "\"";
         orderInfo += "&notify_url=" + "\"" + callbackUrl
                 + "\"";
-
         // 服务接口名称， 固定值
         orderInfo += "&service=\"mobile.securitypay.pay\"";
-
         // 支付类型， 固定值
         orderInfo += "&payment_type=\"1\"";
-
         // 参数编码， 固定值
         orderInfo += "&_input_charset=\"utf-8\"";
-
         // 设置未付款交易的超时时间
         // 默认30分钟，一旦超时，该笔交易就会自动被关闭。
         // 取值范围：1m～15d。
         // m-分钟，h-小时，d-天，1c-当天（无论交易何时创建，都在0点关闭）。
         // 该参数数值不接受小数点，如1.5h，可转换为90m。
         orderInfo += "&it_b_pay=\"30m\"";
-
         // extern_token为经过快登授权获取到的alipay_open_id,带上此参数用户将使用授权的账户进行支付
         // orderInfo += "&extern_token=" + "\"" + extern_token + "\"";
-
         // 支付宝处理完请求后，当前页面跳转到商户指定页面的路径，可空
         orderInfo += "&return_url=\"m.alipay.com\"";
-
         // 调用银行卡支付，需配置此参数，参与签名， 固定值 （需要签约《无线银行卡快捷支付》才能使用）
         // orderInfo += "&paymethod=\"expressGateway\"";
 
@@ -288,23 +274,24 @@ public class AliPayV2 extends AbstractPayment {
 
 
     public static class Builder {
-        //上下文
+        /**
+         * 上下文
+         */
         private Activity activity;
-
-        //未签名的订单信息
+        /**
+         * 未签名的订单信息
+         */
         private String rawAliPayOrderInfo;
-        //服务器签名成功的订单信息
+        /**
+         * 服务器签名成功的订单信息
+         */
         private String signedAliPayOrderInfo;
 
-        public Builder() {
-            super();
-        }
+        private OnAliPayListener onAliPayListener;
 
-        public Builder with(Activity activity) {
+        public Builder(Activity activity) {
             this.activity = activity;
-            return this;
         }
-
 
         /**
          * 设置未签名的订单信息
@@ -328,17 +315,21 @@ public class AliPayV2 extends AbstractPayment {
             return this;
         }
 
-        public AliPayV2 create() {
+        public Builder setOnAliPayListener(OnAliPayListener onAliPayListener) {
+            this.onAliPayListener = onAliPayListener;
+            return this;
+        }
+
+        public AliPayV2 build() {
             AliPayV2 aliPayReq = new AliPayV2();
             aliPayReq.mActivity = this.activity;
             aliPayReq.rawAliPayOrderInfo = this.rawAliPayOrderInfo;
             aliPayReq.signedAliPayOrderInfo = this.signedAliPayOrderInfo;
+            aliPayReq.mOnAliPayListener = this.onAliPayListener;
 
             return aliPayReq;
         }
-
     }
-
 
     /**
      * 支付宝支付订单信息的信息类
@@ -346,13 +337,13 @@ public class AliPayV2 extends AbstractPayment {
      * 所以为了避免商户私钥暴露在客户端，订单的加密过程放到服务器去处理
      */
     public static class AliOrderInfo {
-        String partner;
-        String seller;
-        String outTradeNo;
-        String subject;
-        String body;
-        String price;
-        String callbackUrl;
+        private String partner;
+        private String seller;
+        private String outTradeNo;
+        private String subject;
+        private String body;
+        private String price;
+        private String callbackUrl;
 
         /**
          * 设置商户
@@ -451,14 +442,6 @@ public class AliPayV2 extends AbstractPayment {
                 .setPositiveButton("确定", null)
                 .setOnDismissListener(onDismiss)
                 .show();
-    }
-
-    // 支付宝支付监听
-    private OnAliPayListener mOnAliPayListener;
-
-    public AliPayV2 setOnAliPayListener(OnAliPayListener onAliPayListener) {
-        this.mOnAliPayListener = onAliPayListener;
-        return this;
     }
 
     /**

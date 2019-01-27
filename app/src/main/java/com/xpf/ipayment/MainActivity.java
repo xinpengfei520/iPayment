@@ -152,15 +152,15 @@ public class MainActivity extends AppCompatActivity {
         // TODO 这里需要从服务器获取用商户私钥签名之后的订单信息
         String signAliOrderInfo = getSignAliOrderInfoFromServer(rawAliOrderInfo);
 
-        // 3.发送支付宝支付请求
-        AliPayV2 aliPayReq = new AliPayV2.Builder()
-                .with(this) // Activity实例
+        AliPayV2 aliPayV2 = new AliPayV2.Builder(this)
                 .setRawAliPayOrderInfo(rawAliOrderInfo)//支付宝支付订单信息
                 .setSignedAliPayOrderInfo(signAliOrderInfo) //设置 商户私钥RSA加密后的支付宝支付订单信息
-                .create()//
-                .setOnAliPayListener(null);//
+                .setOnAliPayListener(null)
+                .build();
 
-        PayApi.getInstance().toPay(aliPayReq);
+        // 3.发送支付宝支付请求
+
+        PayApi.getInstance().toPay(aliPayV2);
     }
 
     private String getSignAliOrderInfoFromServer(String rawAliOrderInfo) {
