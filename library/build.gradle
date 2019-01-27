@@ -1,0 +1,110 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.novoda.bintray-release'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    api(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:5.1.6'
+}
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+publish {
+    repoName = 'iPayment' // bintray 仓库名
+    userOrg = 'xinpengfei520' // bintray 注册的用户名
+    groupId = 'com.github.xpf' // implementation 引用时的第 1 部分 groupId
+    artifactId = 'iPayment' // implementation 引用时的第 2 部分项目名
+    publishVersion = "0.1" // implementation 引用时的第 3 部分版本号
+    desc = 'Android app common pay interfaces.'
+    website = 'https://github.com/xinpengfei520/iPayment'
+}
+
+def readProperties(key) {
+    File file = rootProject.file('local.properties')
+    if (file.exists()) {
+        InputStream inputStream = rootProject.file('local.properties').newDataInputStream()
+        Properties properties = new Properties()
+        properties.load(inputStream)
+
+        if (properties.containsKey(key)) {
+            return properties.getProperty(key)
+        }
+    }
+}
+
+task("uploadBintray") {
+    doLast {
+        def command = "../gradlew clean build bintrayUpload -PbintrayUser=xinpengfei520 -PbintrayKey=${readProperties('BINTRAY_KEY')} -PdryRun=false"
+        println "command:" + command
+        try {
+            exec {
+                ExecSpec execSpec ->
+                    executable 'bash'
+                    args '-c', command
+            }
+            println "uploadBintray success~"
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+    }
+}
+
+/**
+ * 发布到 bintray
+ * ./gradlew :library:uploadBintray
+ */
