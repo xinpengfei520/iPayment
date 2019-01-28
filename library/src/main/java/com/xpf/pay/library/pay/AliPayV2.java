@@ -2,9 +2,6 @@ package com.xpf.pay.library.pay;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -28,15 +25,15 @@ public class AliPayV2 extends AbstractPayment {
     /**
      * 用于支付宝支付业务的入参 app_id。
      */
-    public static final String APPID = "";
+    private static final String APPID = "";
     /**
      * 用于支付宝账户登录授权业务的入参 pid。
      */
-    public static final String PID = "";
+    private static final String PID = "";
     /**
      * 用于支付宝账户登录授权业务的入参 target_id。
      */
-    public static final String TARGET_ID = "";
+    private static final String TARGET_ID = "";
 
     /**
      * pkcs8 格式的商户私钥。
@@ -46,8 +43,8 @@ public class AliPayV2 extends AbstractPayment {
      * 建议使用支付宝提供的公私钥生成工具生成和获取 RSA2_PRIVATE。
      * 工具地址：https://doc.open.alipay.com/docs/doc.htm?treeId=291&articleId=106097&docType=1
      */
-    public static final String RSA2_PRIVATE = "";
-    public static final String RSA_PRIVATE = "";
+    private static final String RSA2_PRIVATE = "";
+    private static final String RSA_PRIVATE = "";
 
     /**
      * ali pay sdk flag
@@ -119,15 +116,13 @@ public class AliPayV2 extends AbstractPayment {
         };
     }
 
-
     /**
      * 发送支付宝支付请求
      */
     @Override
     public void pay() {
         if (TextUtils.isEmpty(APPID) || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))) {
-            showAlert(mActivity, "错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
-            return;
+            throw new IllegalArgumentException("错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
         }
 
         /*
@@ -173,8 +168,7 @@ public class AliPayV2 extends AbstractPayment {
         if (TextUtils.isEmpty(PID) || TextUtils.isEmpty(APPID)
                 || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))
                 || TextUtils.isEmpty(TARGET_ID)) {
-            showAlert(mActivity, "错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
-            return;
+            throw new IllegalArgumentException("错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
         }
 
         /*
@@ -212,7 +206,6 @@ public class AliPayV2 extends AbstractPayment {
         authThread.start();
     }
 
-
     /**
      * 创建订单信息
      *
@@ -223,7 +216,7 @@ public class AliPayV2 extends AbstractPayment {
      * @param body        商品详情
      * @param price       商品金额
      * @param callbackUrl 服务器异步通知页面路径
-     * @return
+     * @return getOrderInfo
      */
     private static String getOrderInfo(String partner, String seller, String outTradeNo, String subject, String body, String price, String callbackUrl) {
         // 签约合作者身份ID
@@ -289,6 +282,9 @@ public class AliPayV2 extends AbstractPayment {
 
         private OnAliPayListener onAliPayListener;
 
+        /**
+         * constructor
+         */
         public Builder(Activity activity) {
             this.activity = activity;
         }
@@ -296,8 +292,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置未签名的订单信息
          *
-         * @param rawAliPayOrderInfo
-         * @return
+         * @param rawAliPayOrderInfo rawAliPayOrderInfo
+         * @return rawAliPayOrderInfo
          */
         public Builder setRawAliPayOrderInfo(String rawAliPayOrderInfo) {
             this.rawAliPayOrderInfo = rawAliPayOrderInfo;
@@ -307,8 +303,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置服务器签名成功的订单信息
          *
-         * @param signedAliPayOrderInfo
-         * @return
+         * @param signedAliPayOrderInfo signedAliPayOrderInfo
+         * @return signedAliPayOrderInfo
          */
         public Builder setSignedAliPayOrderInfo(String signedAliPayOrderInfo) {
             this.signedAliPayOrderInfo = signedAliPayOrderInfo;
@@ -348,8 +344,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置商户
          *
-         * @param partner
-         * @return
+         * @param partner partner
+         * @return partner
          */
         public AliOrderInfo setPartner(String partner) {
             this.partner = partner;
@@ -359,8 +355,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置商户账号
          *
-         * @param seller
-         * @return
+         * @param seller seller
+         * @return seller
          */
         public AliOrderInfo setSeller(String seller) {
             this.seller = seller;
@@ -370,8 +366,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置唯一订单号
          *
-         * @param outTradeNo
-         * @return
+         * @param outTradeNo outTradeNo
+         * @return outTradeNo
          */
         public AliOrderInfo setOutTradeNo(String outTradeNo) {
             this.outTradeNo = outTradeNo;
@@ -381,8 +377,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置订单标题
          *
-         * @param subject
-         * @return
+         * @param subject subject
+         * @return subject
          */
         public AliOrderInfo setSubject(String subject) {
             this.subject = subject;
@@ -392,8 +388,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置订单详情
          *
-         * @param body
-         * @return
+         * @param body body
+         * @return body
          */
         public AliOrderInfo setBody(String body) {
             this.body = body;
@@ -403,8 +399,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置价格
          *
-         * @param price
-         * @return
+         * @param price price
+         * @return price
          */
         public AliOrderInfo setPrice(String price) {
             this.price = price;
@@ -414,8 +410,8 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 设置请求回调
          *
-         * @param callbackUrl
-         * @return
+         * @param callbackUrl callbackUrl
+         * @return callbackUrl
          */
         public AliOrderInfo setCallbackUrl(String callbackUrl) {
             this.callbackUrl = callbackUrl;
@@ -425,23 +421,11 @@ public class AliPayV2 extends AbstractPayment {
         /**
          * 创建订单详情
          *
-         * @return
+         * @return createOrderInfo
          */
         public String createOrderInfo() {
             return getOrderInfo(partner, seller, outTradeNo, subject, body, price, callbackUrl);
         }
-    }
-
-    private static void showAlert(Context ctx, String info) {
-        showAlert(ctx, info, null);
-    }
-
-    private static void showAlert(Context ctx, String info, DialogInterface.OnDismissListener onDismiss) {
-        new AlertDialog.Builder(ctx)
-                .setMessage(info)
-                .setPositiveButton("确定", null)
-                .setOnDismissListener(onDismiss)
-                .show();
     }
 
     /**

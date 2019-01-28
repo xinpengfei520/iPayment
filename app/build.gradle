@@ -56,5 +56,7 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation project(':library')
+    //implementation project(':library')
+    implementation 'com.xsir:iPayment:0.1.2'
+    implementation(name: 'alipaySdk-15.5.9-20181123210601', ext: 'aar')
 }

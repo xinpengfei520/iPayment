@@ -2,9 +2,6 @@ package com.xpf.pay.library.pay;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -42,11 +39,9 @@ public class AliPay extends AbstractPayment {
 
     /**
      * pkcs8 格式的商户私钥。
-     * <p>
      * 如下私钥，RSA2_PRIVATE 或者 RSA_PRIVATE 只需要填入一个，如果两个都设置了，本 Demo 将优先
      * 使用 RSA2_PRIVATE。RSA2_PRIVATE 可以保证商户交易在更加安全的环境下进行，建议商户使用
      * RSA2_PRIVATE。
-     * <p>
      * 建议使用支付宝提供的公私钥生成工具生成和获取 RSA2_PRIVATE。
      * 工具地址：https://doc.open.alipay.com/docs/doc.htm?treeId=291&articleId=106097&docType=1
      */
@@ -142,7 +137,6 @@ public class AliPay extends AbstractPayment {
                         break;
                 }
             }
-
         };
     }
 
@@ -197,8 +191,7 @@ public class AliPay extends AbstractPayment {
         if (TextUtils.isEmpty(PID) || TextUtils.isEmpty(APPID)
                 || (TextUtils.isEmpty(RSA2_PRIVATE) && TextUtils.isEmpty(RSA_PRIVATE))
                 || TextUtils.isEmpty(TARGET_ID)) {
-            showAlert(mActivity, "错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
-            return;
+            throw new IllegalArgumentException("错误: 需要配置 PayDemoActivity 中的 APPID 和 RSA_PRIVATE");
         }
 
         /*
@@ -253,69 +246,54 @@ public class AliPay extends AbstractPayment {
      * @param body        商品详情
      * @param price       商品金额
      * @param callbackUrl 服务器异步通知页面路径
-     * @return
+     * @return getOrderInfo
      */
-    public String getOrderInfo(String partner, String seller, String outTradeNo, String subject, String body, String price, String callbackUrl) {
-
+    private String getOrderInfo(String partner, String seller, String outTradeNo, String subject, String body, String price, String callbackUrl) {
         // 签约合作者身份ID
         String orderInfo = "partner=" + "\"" + partner + "\"";
-
         // 签约卖家支付宝账号
         orderInfo += "&seller_id=" + "\"" + seller + "\"";
-
         // 商户网站唯一订单号
         orderInfo += "&out_trade_no=" + "\"" + outTradeNo + "\"";
-
         // 商品名称
         orderInfo += "&subject=" + "\"" + subject + "\"";
-
         // 商品详情
         orderInfo += "&body=" + "\"" + body + "\"";
-
         // 商品金额
         orderInfo += "&total_fee=" + "\"" + price + "\"";
-
         // 服务器异步通知页面路径
 //		orderInfo += "&notify_url=" + "\"" + "http://notify.msp.hk/notify.htm"
 //				+ "\"";
         orderInfo += "&notify_url=" + "\"" + callbackUrl
                 + "\"";
-
         // 服务接口名称， 固定值
         orderInfo += "&service=\"mobile.securitypay.pay\"";
-
         // 支付类型， 固定值
         orderInfo += "&payment_type=\"1\"";
-
         // 参数编码， 固定值
         orderInfo += "&_input_charset=\"utf-8\"";
-
         // 设置未付款交易的超时时间
         // 默认30分钟，一旦超时，该笔交易就会自动被关闭。
         // 取值范围：1m～15d。
         // m-分钟，h-小时，d-天，1c-当天（无论交易何时创建，都在0点关闭）。
         // 该参数数值不接受小数点，如1.5h，可转换为90m。
         orderInfo += "&it_b_pay=\"30m\"";
-
         // extern_token为经过快登授权获取到的alipay_open_id,带上此参数用户将使用授权的账户进行支付
         // orderInfo += "&extern_token=" + "\"" + extern_token + "\"";
-
         // 支付宝处理完请求后，当前页面跳转到商户指定页面的路径，可空
         orderInfo += "&return_url=\"m.alipay.com\"";
-
         // 调用银行卡支付，需配置此参数，参与签名， 固定值 （需要签约《无线银行卡快捷支付》才能使用）
         // orderInfo += "&paymethod=\"expressGateway\"";
 
         return orderInfo;
     }
 
-
     /**
      * sign the order info. 对订单信息进行签名
      *
      * @param content 待签名订单信息
      */
-    public String sign(String content) {
+    private String sign(String content) {
         return SignUtils.sign(content, this.rsaPrivate, false);
     }
 
@@ -325,7 +303,6 @@ public class AliPay extends AbstractPayment {
     public String getSignType() {
         return "sign_type=\"RSA\"";
     }
-
 
     public static class Builder {
         /**
@@ -407,8 +384,8 @@ public class AliPay extends AbstractPayment {
         /**
          * 设置唯一订单号
          *
-         * @param outTradeNo
-         * @return
+         * @param outTradeNo outTradeNo
+         * @return setOutTradeNo
          */
         public Builder setOutTradeNo(String outTradeNo) {
             this.outTradeNo = outTradeNo;
@@ -418,8 +395,8 @@ public class AliPay extends AbstractPayment {
         /**
          * 设置订单标题
          *
-         * @param subject
-         * @return
+         * @param subject subject
+         * @return this
          */
         public Builder setSubject(String subject) {
             this.subject = subject;
@@ -429,8 +406,8 @@ public class AliPay extends AbstractPayment {
         /**
          * 设置订单内容
          *
-         * @param body
-         * @return
+         * @param body body
+         * @return this
          */
         public Builder setBody(String body) {
             this.body = body;
@@ -440,8 +417,8 @@ public class AliPay extends AbstractPayment {
         /**
          * 设置订单价格
          *
-         * @param price
-         * @return
+         * @param price price
+         * @return this
          */
         public Builder setPrice(String price) {
             this.price = price;
@@ -451,8 +428,8 @@ public class AliPay extends AbstractPayment {
         /**
          * 设置回调
          *
-         * @param callbackUrl
-         * @return
+         * @param callbackUrl callbackUrl
+         * @return this
          */
         public Builder setCallbackUrl(String callbackUrl) {
             this.callbackUrl = callbackUrl;
@@ -481,18 +458,6 @@ public class AliPay extends AbstractPayment {
 
             return aliPayReq;
         }
-    }
-
-    private static void showAlert(Context ctx, String info) {
-        showAlert(ctx, info, null);
-    }
-
-    private static void showAlert(Context ctx, String info, DialogInterface.OnDismissListener onDismiss) {
-        new AlertDialog.Builder(ctx)
-                .setMessage(info)
-                .setPositiveButton("确定", null)
-                .setOnDismissListener(onDismiss)
-                .show();
     }
 
     /**

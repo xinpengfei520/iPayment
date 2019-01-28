@@ -19,11 +19,11 @@ allprojects {
     repositories {
         google()
         jcenter()
-        flatDir {
-            dirs 'libs', '../library/libs'
-        }
         maven {
             url 'https://dl.bintray.com/xinpengfei520/iPayment'
+        }
+        flatDir {
+            dirs 'libs', '../library/libs'
         }
     }
     tasks.withType(Javadoc) {
